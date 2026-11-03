@@ -24,3 +24,7 @@ add_test(NAME bplus COMMAND test_bplus)
 add_executable(test_table test_table.cpp)
 target_link_libraries(test_table PRIVATE rb_tree)
 add_test(NAME table COMMAND test_table)
+
+add_executable(test_database test_database.cpp)
+target_link_libraries(test_database PRIVATE rb_tree)
+add_test(NAME database COMMAND test_database)

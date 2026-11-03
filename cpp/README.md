@@ -17,3 +17,16 @@ In the B+ tree, all keys reside in linked leaves, and internal separators direct
 This is an initial storage layer, not yet a SQL database. It does not support multiple tables, SQL, transactions, concurrent writers, corruption checksums, or SQLite files. Truncated records cause opening to fail; there is no automatic recovery. Use a single writer and keep backups of data.
 
 Configure with `cmake -S . -B build`, build with `cmake --build build`, and run tests with `ctest --test-dir build --output-on-failure`.
+## Minimal SQL interface
+
+`Database` in `database.hpp` opens a directory of persistent tables. `execute` accepts one statement at a time:
+
+```sql
+CREATE TABLE people (id INTEGER PRIMARY KEY, value TEXT);
+INSERT INTO people VALUES (1, 'Ada');
+SELECT * FROM people;
+SELECT * FROM people WHERE id = 1;
+DELETE FROM people WHERE id = 1;
+```
+
+Each table uses this fixed schema. Keywords and identifiers are case-insensitive; double an apostrophe inside a string. Results are returned as `Database::Result`, with selected rows ordered by ID. This is an educational SQL subset with no transactions, locking, or SQLite file compatibility. Only one writer may access a database at a time. Like the underlying table store, it rejects truncated records and does not repair them automatically.
