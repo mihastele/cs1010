@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 3.16)
+project(educational_db_cpp LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_library(rb_tree INTERFACE)
+target_include_directories(rb_tree INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+enable_testing()
+add_executable(test_rb_tree test_rb_tree.cpp)
+target_link_libraries(test_rb_tree PRIVATE rb_tree)
+add_test(NAME red_black_tree COMMAND test_rb_tree)
+
+add_executable(test_btree test_btree.cpp)
+target_link_libraries(test_btree PRIVATE rb_tree)
+add_test(NAME btree COMMAND test_btree)
+
+add_executable(test_tree23 test_tree23.cpp)
+target_link_libraries(test_tree23 PRIVATE rb_tree)
+add_test(NAME tree23 COMMAND test_tree23)
