@@ -115,6 +115,9 @@ impl BPlusTree {
         true
     }
     // Return the new right sibling if this node overflows.
+    // A leaf split retains all data keys in leaves, unlike a B-tree split:
+    //   [a b c d] -> [a b] -> [c d]     parent separator: c
+    // The parent stores a routing copy of the right leaf's first key.
     fn insert_node(&mut self, id: usize, key: i32) -> Option<usize> {
         if self.node(id).is_leaf() {
             let i = self.node(id).keys.binary_search(&key).unwrap_err();
@@ -166,6 +169,8 @@ impl BPlusTree {
             n.children.len() > self.degree
         }
     }
+    // Leaves borrow keys; internal nodes borrow child pointers. A merge
+    // reconnects the leaf chain, and the caller refreshes routing separators.
     fn repair(&mut self, parent: usize, i: usize) {
         let child = self.node(parent).children[i];
         if !self.underfull(child) {

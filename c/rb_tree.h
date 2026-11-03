@@ -2,7 +2,9 @@
 #define RB_TREE_H
 #include <stdbool.h>
 typedef struct rb_node rb_node;
-typedef struct { rb_node *root; } rb_tree;
+typedef struct {
+    rb_node *root;
+} rb_tree;
 void rb_init(rb_tree *tree);
 /* Returns false if allocation fails; duplicate keys are accepted without changes. */
 bool rb_insert(rb_tree *tree, int key);

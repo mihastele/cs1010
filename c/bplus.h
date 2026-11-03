@@ -3,7 +3,10 @@
 #include <stdbool.h>
 #include <stddef.h>
 typedef struct bplus_node bplus_node;
-typedef struct { bplus_node *root; size_t degree, size; } bplus_tree;
+typedef struct {
+    bplus_node *root;
+    size_t degree, size;
+} bplus_tree;
 bool bplus_init(bplus_tree *tree, size_t degree);
 void bplus_destroy(bplus_tree *tree);
 bool bplus_contains(const bplus_tree *tree, int key);

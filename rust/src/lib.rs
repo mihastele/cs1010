@@ -18,6 +18,12 @@ pub struct RedBlackTree {
 fn red(n: &Link) -> bool {
     n.as_ref().is_some_and(|n| n.red)
 }
+// A rotation preserves the sorted order A, h, B, x, C:
+//        h                x
+//       / \              / \
+//      A   x     ->     h   C
+//         / \          / \
+//        B   C         A   B
 fn rotate_left(mut h: Box<Node>) -> Box<Node> {
     let mut x = h.right.take().unwrap();
     h.right = x.left.take();
@@ -89,6 +95,7 @@ fn move_red_right(mut h: Box<Node>) -> Box<Node> {
     }
     h
 }
+// Restore left-leaning red links and split temporary 4-nodes on the way up.
 fn balance(mut h: Box<Node>) -> Box<Node> {
     if red(&h.right) {
         h = rotate_left(h);

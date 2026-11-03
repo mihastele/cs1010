@@ -16,6 +16,10 @@ impl Node {
         }
     }
     // Split a full child and promote its middle key into this node.
+    // The median moves into the parent, leaving at least t-1 keys on each side:
+    //        [p]                        [m | p]
+    //       /   \          ->           /   |   \
+    //  [a ... m ... z]               [a...] [...z]
     fn split(&mut self, i: usize, t: usize) {
         let child = &mut self.children[i];
         let right_keys = child.keys.split_off(t);
@@ -48,6 +52,8 @@ impl Node {
         }
         self.children[i].insert_nonfull(key, t);
     }
+    // Pull the separator down between siblings so deletion can continue
+    // in a single node without violating minimum occupancy.
     fn merge(&mut self, i: usize) {
         let separator = self.keys.remove(i);
         let right = self.children.remove(i + 1);

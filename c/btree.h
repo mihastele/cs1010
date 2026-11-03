@@ -3,7 +3,10 @@
 #include <stdbool.h>
 #include <stddef.h>
 typedef struct btree_node btree_node;
-typedef struct { btree_node *root; size_t degree, size; } btree;
+typedef struct {
+    btree_node *root;
+    size_t degree, size;
+} btree;
 /* Degree must be at least 2. A degree of 2 gives a 2-3-4 tree. */
 bool btree_init(btree *tree, size_t degree);
 void btree_destroy(btree *tree);
