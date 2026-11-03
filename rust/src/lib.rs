@@ -249,3 +249,6 @@ pub mod tree234;
 
 /// 2–3 tree encoded with left-leaning red-black links.
 pub mod tree23;
+
+/// B+ tree ordered set.
+pub mod bplus;

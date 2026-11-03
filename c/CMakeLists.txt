@@ -19,3 +19,8 @@ target_include_directories(tree23 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 add_executable(test_tree23 test_tree23.c)
 target_link_libraries(test_tree23 PRIVATE tree23)
 add_test(NAME tree23 COMMAND test_tree23)
+
+add_library(bplus bplus.c)
+target_include_directories(bplus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_executable(test_bplus test_bplus.c)
+add_test(NAME bplus COMMAND test_bplus)

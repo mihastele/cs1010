@@ -16,3 +16,7 @@ add_test(NAME btree COMMAND test_btree)
 add_executable(test_tree23 test_tree23.cpp)
 target_link_libraries(test_tree23 PRIVATE rb_tree)
 add_test(NAME tree23 COMMAND test_tree23)
+
+add_executable(test_bplus test_bplus.cpp)
+target_link_libraries(test_bplus PRIVATE rb_tree)
+add_test(NAME bplus COMMAND test_bplus)
