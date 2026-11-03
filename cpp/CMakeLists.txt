@@ -20,3 +20,7 @@ add_test(NAME tree23 COMMAND test_tree23)
 add_executable(test_bplus test_bplus.cpp)
 target_link_libraries(test_bplus PRIVATE rb_tree)
 add_test(NAME bplus COMMAND test_bplus)
+
+add_executable(test_table test_table.cpp)
+target_link_libraries(test_table PRIVATE rb_tree)
+add_test(NAME table COMMAND test_table)
