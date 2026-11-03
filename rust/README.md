@@ -30,4 +30,14 @@ SELECT * FROM people WHERE id = 1;
 DELETE FROM people WHERE id = 1;
 ```
 
-Each table has exactly this two-column schema; IDs are signed 32-bit integers and values are UTF-8 text. Results are returned as `QueryResult`; selection returns rows in primary-key order. This is a small SQL subset, not SQLite compatibility. Only one writer may access a database at a time; no locking is implemented. The C and C++ database layers are not yet implemented.
+Each table has exactly this two-column schema; IDs are signed 32-bit integers and values are UTF-8 text. Results are returned as `QueryResult`; selection returns rows in primary-key order. This is a small SQL subset, not SQLite compatibility. Only one writer may access a database at a time; no locking is implemented. The C++ project also provides a SQL subset; the C project has table storage but no SQL layer yet.
+
+## Page manager foundation
+
+`pager::Pager` manages a separate file of fixed 4096-byte pages. Page zero contains a magic/version header and an optional root page ID; subsequent pages can be allocated, read, and written by stable page number. `sync` requests that file contents and metadata be flushed.
+
+The pager is not connected to the SQL table store or B+ tree yet: tables still use the append-only log and rebuild their indexes in memory. The pager does not implement free-page reuse, locking, checksums, transactions, or crash-atomic multi-page writes. A failed or interrupted write can corrupt the file; this is a learning foundation, not crash-safe storage.
+
+## Page-backed B+ tree index
+
+`disk_bplus::DiskBPlusTree` stores integer keys in B+ tree pages managed by `pager::Pager`. It currently supports insertion, lookup, inclusive range scans, and explicit `sync`; reopening reads the persisted tree rather than rebuilding it from a log. It is a standalone index and is not yet connected to the SQL table store. Deletion, page reuse, transactions, recovery, and multi-page crash atomicity remain unimplemented.

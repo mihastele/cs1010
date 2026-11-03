@@ -23,3 +23,9 @@ pub mod storage;
 
 /// Minimal SQL database over persistent B+ tree indexed tables.
 pub mod database;
+
+/// Fixed-size page storage for future on-disk indexes.
+pub mod pager;
+
+/// Page-backed B+ tree index.
+pub mod disk_bplus;
