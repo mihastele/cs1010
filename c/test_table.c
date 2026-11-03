@@ -32,6 +32,15 @@ static void *test_realloc(void *p, size_t n) {
         }                                                                                          \
     } while (0)
 static void make_temp(char *out) {
+#ifdef _WIN32
+    const char *dir = getenv("TEMP");
+    CHECK(dir && *dir);
+    CHECK(snprintf(out, 256, "%s/cs1010-table-XXXXXX", dir) < 256);
+    CHECK(_mktemp_s(out, 256) == 0);
+    int fd = open(out, O_CREAT | O_EXCL | O_RDWR | O_BINARY, 0600);
+    CHECK(fd >= 0);
+    close(fd);
+#else
     const char *dir = getenv("TMPDIR");
     if (!dir || !*dir)
         dir = "/tmp";
@@ -39,6 +48,7 @@ static void make_temp(char *out) {
     int fd = mkstemp(out);
     CHECK(fd >= 0);
     close(fd);
+#endif
 }
 /* Inserts "row<k>" for 99..0, replaces 5, and deletes 6; mirrors the Rust
  * persistence test. */
@@ -117,7 +127,9 @@ static void test_invalid_files(void) {
     write_file(path, torn, sizeof torn);
     CHECK(!table_open(&t, path));
     /* Writes that cannot persist fail cleanly. */
+#ifndef _WIN32
     CHECK(!table_open(&t, "/dev/full"));
+#endif
     CHECK(remove(path) == 0);
     CHECK(table_open(&t, path));
     uint8_t *big = malloc(TABLE_MAX_VALUE + 1);

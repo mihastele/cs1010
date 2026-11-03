@@ -16,4 +16,18 @@ Run `cargo test` from this directory.
 
 `storage::Table` stores integer primary keys and byte values in a single append-only file. It rebuilds an in-memory B+ tree index on open, and supports insert, lookup, delete, and ordered inclusive range scans. Each successful mutation syncs the log before returning.
 
-This is an initial storage layer, not yet a SQL database. It does not support multiple tables, SQL, transactions, concurrent writers, corruption checksums, or SQLite files. Truncated records cause opening to fail; there is no automatic recovery. A failed write can leave a partial record, and the table must be reopened (and potentially repaired manually). Use a single writer and keep backups of data.
+This is an educational storage layer. It does not support transactions, concurrent writers, corruption checksums, or SQLite files. Truncated records cause opening to fail; there is no automatic recovery. A failed write can leave a partial record, and the table must be reopened (and potentially repaired manually). Use a single writer and keep backups of data.
+
+## Minimal SQL interface
+
+`database::Database::open(directory)` opens a directory of tables. Call `execute` with one of these statements (identifiers and keywords are case-insensitive; strings use SQL doubled apostrophes):
+
+```sql
+CREATE TABLE people (id INTEGER PRIMARY KEY, value TEXT);
+INSERT INTO people VALUES (1, 'Ada');
+SELECT * FROM people;
+SELECT * FROM people WHERE id = 1;
+DELETE FROM people WHERE id = 1;
+```
+
+Each table has exactly this two-column schema; IDs are signed 32-bit integers and values are UTF-8 text. Results are returned as `QueryResult`; selection returns rows in primary-key order. This is a small SQL subset, not SQLite compatibility. Only one writer may access a database at a time; no locking is implemented. The C and C++ database layers are not yet implemented.

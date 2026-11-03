@@ -41,6 +41,7 @@ static void test_persistence() {
         require(t.insert(5, to_bytes("replacement")));
         require(t.erase(6));
         require(t.insert(1000, {})); // Empty values round-trip.
+        require(t.insert(1001, {0x0a, 0x0d, 0x1a, 0x00}));
     }
     {
         Table t(path);
@@ -49,6 +50,8 @@ static void test_persistence() {
         require(t.get(6) == nullptr);
         v = t.get(1000);
         require(v && v->empty());
+        v = t.get(1001);
+        require(v && *v == std::vector<std::uint8_t>({0x0a, 0x0d, 0x1a, 0x00}));
         auto rows = t.range(3, 8);
         require(rows.size() == 5);
         std::int32_t want[] = {3, 4, 5, 7, 8};
@@ -83,8 +86,11 @@ static void test_invalid_files() {
     write_file(path, {'C', 'S', 'D', 'B', 1, 0, 0, 0, 1, 7, 0, 0, 0, 3, 0, 0, 0, 'a', 'b'});
     require_throws([&] { Table t(path); });
     // Writes that cannot persist fail cleanly.
+#ifndef _WIN32
     require_throws([] { Table t("/dev/full"); });
+#endif
     std::filesystem::remove(path);
+    {
     Table t(path);
     bool invalid = false;
     try {
@@ -94,6 +100,7 @@ static void test_invalid_files() {
     }
     require(invalid);
     require(t.get(1) == nullptr);
+    }
     std::filesystem::remove(path);
 }
 int main() {

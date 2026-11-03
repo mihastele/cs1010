@@ -5,7 +5,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#ifdef _WIN32
+#include <io.h>
+#define DB_SYNC _commit
+#define DB_BINARY O_BINARY
+#else
 #include <unistd.h>
+#define DB_SYNC fsync
+#define DB_BINARY 0
+#endif
 /* Log format, shared with the Rust and C++ implementations: an 8-byte
  * header followed by append-only records. Integers are little-endian so
  * files stay comparable across platforms.
@@ -114,7 +122,7 @@ static void rows_remove(table *t, int32_t key) {
 static bool append(table *t, const uint8_t *record, size_t n) {
     if (t->failed)
         return false;
-    if (!write_all(t->fd, record, n) || fsync(t->fd) < 0) {
+    if (!write_all(t->fd, record, n) || DB_SYNC(t->fd) < 0) {
         t->failed = true;
         return false;
     }
@@ -127,14 +135,14 @@ bool table_open(table *t, const char *path) {
     t->failed = false;
     if (!bplus_init(&t->index, 8))
         return false;
-    t->fd = open(path, O_RDWR | O_CREAT, 0666);
+    t->fd = open(path, O_RDWR | O_CREAT | DB_BINARY, 0666);
     if (t->fd < 0)
         goto fail;
     struct stat st;
     if (fstat(t->fd, &st) < 0)
         goto fail;
     if (st.st_size == 0) {
-        if (!write_all(t->fd, magic, sizeof magic) || fsync(t->fd) < 0)
+        if (!write_all(t->fd, magic, sizeof magic) || DB_SYNC(t->fd) < 0)
             goto fail;
     } else {
         uint8_t header[8];

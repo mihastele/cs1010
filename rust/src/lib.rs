@@ -20,3 +20,6 @@ pub mod bplus;
 
 /// Persistent table storage backed by a B+ tree index.
 pub mod storage;
+
+/// Minimal SQL database over persistent B+ tree indexed tables.
+pub mod database;

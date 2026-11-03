@@ -6,7 +6,15 @@
 #include <fcntl.h>
 #include <stdexcept>
 #include <string>
+#ifdef _WIN32
+#include <io.h>
+#define DB_SYNC _commit
+#define DB_BINARY O_BINARY
+#else
 #include <unistd.h>
+#define DB_SYNC fsync
+#define DB_BINARY 0
+#endif
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -38,7 +46,7 @@ class Table {
     // Opens or creates the table at path. Throws on I/O, format, or
     // allocation failure.
     explicit Table(const std::string &path) : index_(8) {
-        int fd = ::open(path.c_str(), O_RDWR | O_CREAT, 0666);
+        int fd = ::open(path.c_str(), O_RDWR | O_CREAT | DB_BINARY, 0666);
         if (fd < 0)
             throw std::runtime_error("open " + path + ": " + std::strerror(errno));
         try {
@@ -47,7 +55,7 @@ class Table {
                 throw std::runtime_error("stat " + path + ": " + std::strerror(errno));
             if (size == 0) {
                 write_all(fd, kMagic, sizeof kMagic);
-                if (::fsync(fd) < 0)
+                if (::DB_SYNC(fd) < 0)
                     throw std::runtime_error("sync " + path + ": " + std::strerror(errno));
             } else {
                 if (::lseek(fd, 0, SEEK_SET) < 0)
@@ -180,7 +188,7 @@ class Table {
     void append(const std::vector<std::uint8_t> &record) {
         try {
             write_all(fd_, record.data(), record.size());
-            if (::fsync(fd_) < 0)
+            if (::DB_SYNC(fd_) < 0)
                 throw std::runtime_error(std::string("sync: ") + std::strerror(errno));
         } catch (...) {
             failed_ = true;
