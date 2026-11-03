@@ -1,9 +1,9 @@
-//! A 2–3 tree is represented by a left-leaning red-black tree. A black node
+//! A 2â€“3 tree is represented by a left-leaning red-black tree. A black node
 //! and its red left child encode a 3-node; an unpaired black node encodes a
 //! 2-node. Red-black rotations and color changes implement splits and merges.
 use crate::RedBlackTree;
 
-/// An ordered integer set backed by a 2–3 tree encoded using binary links.
+/// An ordered integer set backed by a 2â€“3 tree encoded using binary links.
 #[derive(Debug, Default)]
 pub struct Tree23 {
     tree: RedBlackTree,
@@ -44,32 +44,6 @@ impl Tree23 {
 mod tests {
     use super::*;
     use std::collections::BTreeSet;
-    // Decode each black node and its optional red left link as one 2–3 node.
-    fn check(
-        link: &crate::Link,
-        lo: i64,
-        hi: i64,
-        depth: usize,
-        leaf: &mut Option<usize>,
-    ) -> usize {
-        let Some(n) = link else {
-            assert_eq!(*leaf.get_or_insert(depth), depth);
-            return 0;
-        };
-        assert!(!n.red && !crate::red(&n.right));
-        if crate::red(&n.left) {
-            let left = n.left.as_ref().unwrap();
-            assert!(!crate::red(&left.left) && !crate::red(&left.right));
-            assert!(lo < left.key as i64 && left.key < n.key && (n.key as i64) < hi);
-            2 + check(&left.left, lo, left.key as i64, depth + 1, leaf)
-                + check(&left.right, left.key as i64, n.key as i64, depth + 1, leaf)
-                + check(&n.right, n.key as i64, hi, depth + 1, leaf)
-        } else {
-            assert!(lo < n.key as i64 && (n.key as i64) < hi);
-            1 + check(&n.left, lo, n.key as i64, depth + 1, leaf)
-                + check(&n.right, n.key as i64, hi, depth + 1, leaf)
-        }
-    }
     #[test]
     fn mixed_operations_and_decoded_invariants() {
         let mut tree = Tree23::new();
@@ -84,17 +58,14 @@ mod tests {
                 assert_eq!(tree.remove(key), expected.remove(&key));
             }
             assert_eq!(tree.len(), expected.len());
-            assert_eq!(
-                check(&tree.tree.root, i64::MIN, i64::MAX, 0, &mut None),
-                tree.len()
-            );
+            assert_eq!(crate::red_black_tree::check_23(&tree.tree), tree.len());
             for k in -150..150 {
                 assert_eq!(tree.contains(k), expected.contains(&k));
             }
         }
         for key in expected {
             assert!(tree.remove(key));
-            check(&tree.tree.root, i64::MIN, i64::MAX, 0, &mut None);
+            crate::red_black_tree::check_23(&tree.tree);
         }
         assert!(tree.is_empty());
     }
